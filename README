@@ -1,1 +1,21 @@
 This is a CUDA Matrix library for julia language
+
+Getting Started:
+
+Download
+- git clone git@github.com/pavanky/julia-CuMatrix.git
+
+Pre-Install
+- Make sure you have the CUDA toolkit and driver installed on your system
+- Open Path/to/julia-CuMatrix/Makefile and point CUDADIR to your CUDA install path
+
+Install
+- make all
+
+Post Install
+- export LD_LIBRARY_PATH=/path/to/julia-CuMatrix/:/path/to/cuda/lib64:$LD_LIBRARY_PATH
+- On 32 bit systems, use lib instead of lib64
+- You will need to export LD_LIBRARY_PATH everytime you start a new terminal
+- Alternatively you can add that line at the end of your .bashrc
+
+You are good to go
