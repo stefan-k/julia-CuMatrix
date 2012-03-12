@@ -9,14 +9,14 @@ CUDADIR=/usr/local/cuda
 CUDALIB=$(CUDADIR)/lib$(BIT)
 CFLAGS+=-I$(CUDADIR)/include
 CXXFLAGS=$(CFLAGS)
-LDFLAGS+=-shared -Wl,-soname,libcumem.so -o libcumem.so
-LDFLAGS+=-L$(CUDALIB) -lcudart -Wl,-rpath,$(CUDALIB)
+LDFLAGS+=-shared -Wl,-soname,libcuplus.so -o libcuplus.so
+LDFLAGS+=-L$(CUDALIB) -lcudart -lcurand -Wl,-rpath,$(CUDALIB)
 LDFLAGS+=-fPIC
 SRC+=$(shell ls *.cpp)
 
-all: libcumem.so
+all: libcuplus.so
 
-libcumem.so: $(SRC)
+libcuplus.so: $(SRC)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(SRC)
 
 clean:
