@@ -1,4 +1,5 @@
 libCUMEM=dlopen("libcuplus")
+libCUBLAS=dlopen("libcublas")
 
 # Allocate device memory
 function jl_cuda_malloc(T::Type, count::Integer)
@@ -60,3 +61,26 @@ function jl_curandn(T::Type, ptr::Ptr{Void}, count::Integer)
           Void, (Ptr{Void}, Int32, Bool),
           ptr, count, IsFloat64)
 end
+
+function jl_gemm{T}(transA::Char, transB::Char,
+                    m::Int32, n::Int32, k::Int32,
+                    alpha::T, A::Ptr{Void}, lda::Int32,
+                    B::Ptr{Void}, ldb::Int32, beta::T,
+                    C::Ptr{Void}, ldc::Int32)
+    # FIXME: Fix the following fugliness
+    if (T == Float32)
+        ccall(dlsym(libCUBLAS, :cublasSgemm),
+              Void, (Char, Char, Int32, Int32, Int32,
+                     Float32, Ptr{Float32}, Int32, Ptr{Float32}, Int32,
+                     Float32, Ptr{Float32}, Int32),
+              transA, transB, m, n, k, alpha, A, lda, B, ldb,
+              beta, C, ldc)
+    else
+        ccall(dlsym(libCUBLAS, :cublasDgemm),
+              Void, (Char, Char, Int32, Int32, Int32,
+                     Float64, Ptr{Float64}, Int32, Ptr{Float64}, Int32,
+                     Float64, Ptr{Float64}, Int32),
+              transA, transB, m, n, k, alpha, A, lda, B, ldb,
+              beta, C, ldc)
+    end
+end                  
