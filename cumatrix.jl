@@ -24,6 +24,7 @@ type CuMatrix
         new(T, ptr, dims)
     end
 
+    # Constructor with existing device pointer
     function CuMatrix(T::Type, ptr::Ptr{Void}, dims::(Integer, Integer))
         new(T, ptr, dims)
     end
@@ -31,6 +32,10 @@ type CuMatrix
     # Aliasing
     CuMatrix(T::Type, rows::Integer, cols::Integer) = CuMatrix(T, (rows, cols))
     CuMatrix(T::Type, rows::Integer) = CuMatrix(T, (rows, 1))
+
+    # Default type: Single precision (for compatibility with older cards)
+    CuMatrix(rows::Integer, cols::Integer) = CuMatrix(Float32, rows, cols)
+    CuMatrix(rows::Integer) = CuMatrix(Float32, rows, 1)
 end
 
 # Get matrix from device to host

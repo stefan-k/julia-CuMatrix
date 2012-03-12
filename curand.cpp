@@ -11,7 +11,7 @@ void cuda_rand(void *ptr, int numel, bool dbl)
         is_init = true;
     }
 
-    if (dbl) {
+    if (!dbl) {
         curandGenerateUniform(stream, (float *)ptr, numel);
     } else {
         curandGenerateUniformDouble(stream, (double *)ptr, numel);
@@ -30,7 +30,7 @@ void cuda_randn(void *ptr, int numel, bool dbl)
         is_init = true;
     }
 
-    if (dbl) {
+    if (!dbl) {
         curandGenerateNormal(stream, (float *)ptr, numel, 0, 1);
     } else {
         curandGenerateNormalDouble(stream, (double *)ptr, numel, 0, 1);
