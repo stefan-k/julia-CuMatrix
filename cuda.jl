@@ -84,3 +84,29 @@ function jl_gemm{T}(transA::Char, transB::Char,
               beta, C, ldc)
     end
 end                  
+
+function jl_amax{T}(n::Int32, x::Ptr{Void}, incx::Int32, result::Ptr{Void})
+    if T == Float64
+        ccall(dlsym(libCUBLAS, :cublasIdamax),
+              Void, (Int32, Ptr{Float64}, Int32, Ptr{Int32}),
+              n, x, incx, result)
+    end
+    return result
+end
+
+function jl_asum{T}(n::Int32, x::Ptr{Void}, incx::Int32, result::Ptr{Void})
+    if T == Float64
+        ccall(dlsym(libCUBLAS, :cublasDasum),
+              Void, (Int32, Ptr{Float64}, Int32, Ptr{Int32}),
+              n, x, incx, result)
+    end
+    return result
+end
+
+function jl_scal{T}(n::Int32, alpha::T, x::Ptr{Void}, incx::Int32)
+    if T == Float64
+        ccall(dlsym(libCUBLAS, :cublasDscal),
+              Void, (Int32, Float64, Ptr{Float64}, Int32),
+              n, alpha, x, incx)
+    end
+end
