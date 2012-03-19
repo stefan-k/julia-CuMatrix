@@ -60,5 +60,11 @@ function cuscal(A::CuMatrix, alpha)
     # needs some more checking
     n = convert(Int32, A.dims[1] > A.dims[2] ? A.dims[1] : A.dims[2])
     jl_scal(n, alpha, A.ptr, int32(1))
-    return A
+end
+
+function cudot(A::CuMatrix, B::CuMatrix)
+    result = CuMatrix(A.T, 1, 1)
+    n = convert(Int32, A.dims[1] > A.dims[2] ? A.dims[1] : A.dims[2])
+    jl_dot(n, A.ptr, int32(1), B.ptr, int32(1), result.ptr)
+    return result
 end
