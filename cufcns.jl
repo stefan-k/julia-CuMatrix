@@ -39,3 +39,32 @@ function (*)(A::CuMatrix, B::CuMatrix)
             zero(A.T), C.ptr, m)
     return C
 end
+
+function cuamax(A::CuMatrix)
+    result = CuMatrix(Int32, 1, 1)
+    # needs some more checking
+    n = convert(Int32, A.dims[1] > A.dims[2] ? A.dims[1] : A.dims[2])
+    jl_amax(n,  A.ptr, int32(1), result.ptr)
+    return result
+end
+
+function cuasum(A::CuMatrix)
+    result = CuMatrix(A.T, 1, 1)
+    # needs some more checking
+    n = convert(Int32, A.dims[1] > A.dims[2] ? A.dims[1] : A.dims[2])
+    jl_asum(n,  A.ptr, int32(1), result.ptr)
+    return result
+end
+
+function cuscal(A::CuMatrix, alpha)
+    # needs some more checking
+    n = convert(Int32, A.dims[1] > A.dims[2] ? A.dims[1] : A.dims[2])
+    jl_scal(n, alpha, A.ptr, int32(1))
+end
+
+function cudot(A::CuMatrix, B::CuMatrix)
+    result = CuMatrix(A.T, 1, 1)
+    n = convert(Int32, A.dims[1] > A.dims[2] ? A.dims[1] : A.dims[2])
+    jl_dot(n, A.ptr, int32(1), B.ptr, int32(1), result.ptr)
+    return result
+end
