@@ -114,31 +114,43 @@ function (*)(A::CuMatrix, B::CuMatrix)
     return C
 end
 
-function cuamax(A::CuMatrix)
-    result = CuMatrix(Int32, 1, 1)
-    # needs some more checking
-    n = convert(Int32, A.dims[1] > A.dims[2] ? A.dims[1] : A.dims[2])
-    cuda_amax(n,  A.ptr, int32(1), result.ptr)
-    return result
+function amax(A::CuMatrix)
+    n = convert(Int32, A.dims[1] * A.dims[2])
+    cuda_amax(n,  A.ptr)
 end
 
-function cuasum(A::CuMatrix)
-    result = CuMatrix(A.T, 1, 1)
-    # needs some more checking
-    n = convert(Int32, A.dims[1] > A.dims[2] ? A.dims[1] : A.dims[2])
-    cuda_asum(n,  A.ptr, int32(1), result.ptr)
-    return result
+function amin(A::CuMatrix)
+    n = convert(Int32, A.dims[1] * A.dims[2])
+    cuda_amin(n,  A.ptr)
 end
 
-function cuscal(A::CuMatrix, alpha)
-    # needs some more checking
-    n = convert(Int32, A.dims[1] > A.dims[2] ? A.dims[1] : A.dims[2])
-    cuda_scal(n, alpha, A.ptr, int32(1))
+function asum(A::CuMatrix)
+    n = convert(Int32, A.dims[1] * A.dims[2])
+    cuda_asum(n,  A.ptr)
 end
 
-function cudot(A::CuMatrix, B::CuMatrix)
-    result = CuMatrix(A.T, 1, 1)
-    n = convert(Int32, A.dims[1] > A.dims[2] ? A.dims[1] : A.dims[2])
-    cuda_dot(n, A.ptr, int32(1), B.ptr, int32(1), result.ptr)
+function (*)(A::CuMatrix, alpha)
+    n = convert(Int32, A.dims[1] * A.dims[2])
+    B = copy(A)
+    alpha = convert(A.T, alpha)
+    cuda_scal(n, B.ptr, alpha)
+end
+
+function dot(A::CuMatrix, B::CuMatrix)
+    result = 0
+    result = convert(A.T, result)
+
+    if A.T != B.T
+        error("Precision mismatch in Dot product")
+    end
+
+    n = convert(Int32, A.dims[1] * A.dims[2])
+    m = convert(Int32, B.dims[1] * B.dims[2])
+
+    if n != m
+      error("Number of elements not equal for dot product")
+    end
+
+    cuda_dot(n, A.ptr, int32(1), B.ptr, int32(1), &result)
     return result
 end
