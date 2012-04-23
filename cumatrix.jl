@@ -58,11 +58,15 @@ function copy(in::CuMatrix)
     mem_copy(ptr, in.ptr, bytes)
     CuMatrix(in.T, ptr, in.dims)
 end
-    
+
 # Display function
 function print(in::CuMatrix)
-    print("On GPU\n")
-    print(Array(in), "\n")
+    print("On GPU\n", Array(in), "\n")
+end
+
+# Display function
+function show(in::CuMatrix)
+    print(in)
 end
 
 # Freeing memory
