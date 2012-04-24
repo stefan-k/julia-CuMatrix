@@ -116,7 +116,8 @@ end
 
 function amax(A::CuMatrix)
     n = convert(Int32, A.dims[1] * A.dims[2])
-    cuda_amax(n,  A.ptr)
+    ptr = convert(Ptr{A.T}, A.ptr)
+    cuda_amax(n, ptr)
 end
 
 function amin(A::CuMatrix)
@@ -137,20 +138,14 @@ function (*)(A::CuMatrix, alpha)
 end
 
 function dot(A::CuMatrix, B::CuMatrix)
-    result = 0
-    result = convert(A.T, result)
 
     if A.T != B.T
         error("Precision mismatch in Dot product")
     end
-
     n = convert(Int32, A.dims[1] * A.dims[2])
-    m = convert(Int32, B.dims[1] * B.dims[2])
 
-    if n != m
-      error("Number of elements not equal for dot product")
-    end
+    ptrA = convert(Ptr{A.T}, A.ptr)
+    ptrB = convert(Ptr{B.T}, B.ptr)
 
-    cuda_dot(n, A.ptr, int32(1), B.ptr, int32(1), &result)
-    return result
+    cuda_dot(n, ptrA, ptrB)
 end
