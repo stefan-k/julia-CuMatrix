@@ -10,7 +10,8 @@ Pre-Install
 - Open Path/to/julia-CuMatrix/Makefile and point CUDADIR to your CUDA install path
 
 Install
-- make all
+- make -C cuplus clean
+- make -C cuplus all
 
 Post Install
 - export LD_LIBRARY_PATH=/path/to/julia-CuMatrix/:/path/to/cuda/lib64:$LD_LIBRARY_PATH
