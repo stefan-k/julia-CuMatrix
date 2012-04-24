@@ -83,9 +83,9 @@ end
 # Matrix multiply
 function cuda_gemm{T}(transA::Char, transB::Char,
                     m::Int32, n::Int32, k::Int32,
-                    alpha::T, A::Ptr{Void}, lda::Int32,
-                    B::Ptr{Void}, ldb::Int32, beta::T,
-                    C::Ptr{Void}, ldc::Int32)
+                    alpha::T, A::Ptr{T}, lda::Int32,
+                    B::Ptr{T}, ldb::Int32, beta::T,
+                    C::Ptr{T}, ldc::Int32)
     # FIXME: Fix the following fugliness
     if (T == Float32)
         ccall(dlsym(libcublas, :cublasSgemm),
@@ -118,20 +118,20 @@ function cuda_amax{T}(num::Int32, x::Ptr{T})
 end
 
 # Find the index of the absolute minimum value
-function cuda_amax{T}(num::Int32, x::Ptr{T})
+function cuda_amin{T}(num::Int32, x::Ptr{T})
     if (T == Float64)
-        ccall(dlsym(libcublas, :cublasIdamax),
+        ccall(dlsym(libcublas, :cublasIdamin),
               Int32, (Int32, Ptr{Float64}, Int32),
               num, x, 1)
     else
-        ccall(dlsym(libcublas, :cublasIsamax),
+        ccall(dlsym(libcublas, :cublasIsamin),
               Int32, (Int32, Ptr{Float32}, Int32),
               num, x, 1)
     end
 end
 
 # Find the sum of absolute values
-function cuda_asum{T}(num::Int32, x::Ptr{Void})
+function cuda_asum{T}(num::Int32, x::Ptr{T})
     if (T == Float64)
         ccall(dlsym(libcublas, :cublasDasum),
               Float64, (Int32, Ptr{Float64}, Int32),
@@ -144,7 +144,7 @@ function cuda_asum{T}(num::Int32, x::Ptr{Void})
 end
 
 # Scale the matrix
-function cuda_scal{T}(num::Int32, x::Ptr{Void}, alpha::T)
+function cuda_scal{T}(num::Int32, x::Ptr{T}, alpha::T)
     if (T == Float64)
         ccall(dlsym(libcublas, :cublasDscal),
               Void, (Int32, Float64, Ptr{Float64}, Int32),

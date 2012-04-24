@@ -94,6 +94,10 @@ end
 curand(rows::Integer, cols::Integer) = curand(Float32, rows, cols)
 curandn(rows::Integer, cols::Integer) = curandn(Float32, rows, cols)
 
+function getptr(A::CuMatrix)
+    convert(Ptr{A.T}, A.ptr)
+end
+
 # BLAS Functions
 function (*)(A::CuMatrix, B::CuMatrix)
     if (A.dims[2] != B.dims[1])
@@ -108,33 +112,40 @@ function (*)(A::CuMatrix, B::CuMatrix)
     n = convert(Int32, C.dims[2])
     k = convert(Int32, B.dims[1])
     
+    ptrA = getptr(A)
+    ptrB = getptr(B)
+    ptrC = getptr(C)
     cuda_gemm('N', 'N', m, n, k,
-            one(A.T), A.ptr, m, B.ptr, k,
-            zero(A.T), C.ptr, m)
+            one(A.T), ptrA, m, ptrB, k,
+            zero(A.T), ptrC, m)
     return C
 end
 
 function amax(A::CuMatrix)
     n = convert(Int32, A.dims[1] * A.dims[2])
-    ptr = convert(Ptr{A.T}, A.ptr)
+    ptr = getptr(A)
     cuda_amax(n, ptr)
 end
 
 function amin(A::CuMatrix)
     n = convert(Int32, A.dims[1] * A.dims[2])
-    cuda_amin(n,  A.ptr)
+    ptr = getptr(A)
+    cuda_amin(n, ptr)
 end
 
 function asum(A::CuMatrix)
     n = convert(Int32, A.dims[1] * A.dims[2])
-    cuda_asum(n,  A.ptr)
+    ptr = getptr(A)
+    cuda_asum(n, ptr)
 end
 
 function (*)(A::CuMatrix, alpha)
     n = convert(Int32, A.dims[1] * A.dims[2])
     B = copy(A)
     alpha = convert(A.T, alpha)
-    cuda_scal(n, B.ptr, alpha)
+    ptr = getptr(B)
+    cuda_scal(n, ptr, alpha)
+    return B
 end
 
 function dot(A::CuMatrix, B::CuMatrix)
@@ -142,10 +153,15 @@ function dot(A::CuMatrix, B::CuMatrix)
     if A.T != B.T
         error("Precision mismatch in Dot product")
     end
+   
     n = convert(Int32, A.dims[1] * A.dims[2])
+    m = convert(Int32, B.dims[1] * B.dims[2])
 
-    ptrA = convert(Ptr{A.T}, A.ptr)
-    ptrB = convert(Ptr{B.T}, B.ptr)
+    if m != n
+        error("Size mismatch in Dot product")
+    end
 
+    ptrA = getptr(A)
+    ptrB = getptr(B)
     cuda_dot(n, ptrA, ptrB)
 end
