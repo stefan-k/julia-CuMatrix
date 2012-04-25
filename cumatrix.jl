@@ -18,8 +18,7 @@ type CuMatrix
     end
 
     # Copy Matrix from host
-    function CuMatrix(in::Matrix)
-        T = eltype(in)
+    function CuMatrix{T}(in::Matrix{T})
         dims = size(in)
         ptr = cuda_malloc(T, dims)
         mem_device(ptr, in)
