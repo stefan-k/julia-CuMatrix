@@ -81,90 +81,93 @@ function cuda_randn(T::Type, ptr::Ptr{Void}, count::Integer)
 end
 
 # Matrix multiply
-function cuda_gemm{T}(transA::Char, transB::Char,
-                    m::Int32, n::Int32, k::Int32,
-                    alpha::T, A::Ptr{T}, lda::Int32,
-                    B::Ptr{T}, ldb::Int32, beta::T,
-                    C::Ptr{T}, ldc::Int32)
-    # FIXME: Fix the following fugliness
-    if (T == Float32)
-        ccall(dlsym(libcublas, :cublasSgemm),
-              Void, (Char, Char, Int32, Int32, Int32,
-                     Float32, Ptr{Float32}, Int32, Ptr{Float32}, Int32,
-                     Float32, Ptr{Float32}, Int32),
-              transA, transB, m, n, k, alpha, A, lda, B, ldb,
-              beta, C, ldc)
-    else
-        ccall(dlsym(libcublas, :cublasDgemm),
-              Void, (Char, Char, Int32, Int32, Int32,
-                     Float64, Ptr{Float64}, Int32, Ptr{Float64}, Int32,
-                     Float64, Ptr{Float64}, Int32),
-              transA, transB, m, n, k, alpha, A, lda, B, ldb,
-              beta, C, ldc)
-    end
+function cuda_gemm(transA::Char, transB::Char,
+                   m::Int32, n::Int32, k::Int32,
+                   alpha::Float64, A::Ptr{Float64}, lda::Int32,
+                   B::Ptr{Float64}, ldb::Int32, beta::Float64,
+                   C::Ptr{Float64}, ldc::Int32)
+    ccall(dlsym(libcublas, :cublasDgemm),
+          Void, (Char, Char, Int32, Int32, Int32,
+                 Float64, Ptr{Float64}, Int32, Ptr{Float64}, Int32,
+                 Float64, Ptr{Float64}, Int32),
+          transA, transB, m, n, k, alpha, A, lda, B, ldb,
+          beta, C, ldc)
+end
+
+function cuda_gemm(transA::Char, transB::Char,
+                   m::Int32, n::Int32, k::Int32,
+                   alpha::Float32, A::Ptr{Float32}, lda::Int32,
+                   B::Ptr{Float32}, ldb::Int32, beta::Float32,
+                   C::Ptr{Float32}, ldc::Int32)
+    ccall(dlsym(libcublas, :cublasSgemm),
+          Void, (Char, Char, Int32, Int32, Int32,
+                 Float32, Ptr{Float32}, Int32, Ptr{Float32}, Int32,
+                 Float32, Ptr{Float32}, Int32),
+          transA, transB, m, n, k, alpha, A, lda, B, ldb,
+          beta, C, ldc)
 end                  
 
 # Find the index of the absolute maximum value
-function cuda_amax{T}(num::Int32, x::Ptr{T})
-    if (T == Float64)
-        ccall(dlsym(libcublas, :cublasIdamax),
-              Int32, (Int32, Ptr{Float64}, Int32),
-              num, x, 1)
-    else
-        ccall(dlsym(libcublas, :cublasIsamax),
-              Int32, (Int32, Ptr{Float32}, Int32),
-              num, x, 1)
-    end
+function cuda_amax(num::Int32, x::Ptr{Float64})
+    ccall(dlsym(libcublas, :cublasIdamax),
+          Int32, (Int32, Ptr{Float64}, Int32),
+          num, x, 1)
+end
+
+function cuda_amax(num::Int32, x::Ptr{Float32})
+    ccall(dlsym(libcublas, :cublasIsamax),
+          Int32, (Int32, Ptr{Float32}, Int32),
+          num, x, 1)
 end
 
 # Find the index of the absolute minimum value
-function cuda_amin{T}(num::Int32, x::Ptr{T})
-    if (T == Float64)
-        ccall(dlsym(libcublas, :cublasIdamin),
-              Int32, (Int32, Ptr{Float64}, Int32),
-              num, x, 1)
-    else
-        ccall(dlsym(libcublas, :cublasIsamin),
-              Int32, (Int32, Ptr{Float32}, Int32),
-              num, x, 1)
-    end
+function cuda_amin(num::Int32, x::Ptr{Float64})
+    ccall(dlsym(libcublas, :cublasIdamin),
+          Int32, (Int32, Ptr{Float64}, Int32),
+          num, x, 1)
+end
+
+function cuda_amin(num::Int32, x::Ptr{Float32})
+    ccall(dlsym(libcublas, :cublasIsamin),
+          Int32, (Int32, Ptr{Float32}, Int32),
+          num, x, 1)
 end
 
 # Find the sum of absolute values
-function cuda_asum{T}(num::Int32, x::Ptr{T})
-    if (T == Float64)
-        ccall(dlsym(libcublas, :cublasDasum),
-              Float64, (Int32, Ptr{Float64}, Int32),
-              num, x, 1)
-    else
-        ccall(dlsym(libcublas, :cublasSasum),
-              Float32, (Int32, Ptr{Float32}, Int32),
-              num, x, 1)
-    end
+function cuda_asum(num::Int32, x::Ptr{Float64})
+    ccall(dlsym(libcublas, :cublasDasum),
+          Float64, (Int32, Ptr{Float64}, Int32),
+          num, x, 1)
+end
+
+function cuda_asum(num::Int32, x::Ptr{Float32})
+    ccall(dlsym(libcublas, :cublasSasum),
+          Float32, (Int32, Ptr{Float32}, Int32),
+          num, x, 1)
 end
 
 # Scale the matrix
-function cuda_scal{T}(num::Int32, x::Ptr{T}, alpha::T)
-    if (T == Float64)
-        ccall(dlsym(libcublas, :cublasDscal),
-              Void, (Int32, Float64, Ptr{Float64}, Int32),
-              num, alpha, x, 1)
-    else
-        ccall(dlsym(libcublas, :cublasSscal),
-              Void, (Int32, Float32, Ptr{Float32}, Int32),
-              num, alpha, x, 1)
-    end
+function cuda_scal(num::Int32, x::Ptr{Float64}, alpha::Float64)
+    ccall(dlsym(libcublas, :cublasDscal),
+          Void, (Int32, Float64, Ptr{Float64}, Int32),
+          num, alpha, x, 1)
+end
+
+function cuda_scal(num::Int32, x::Ptr{Float32}, alpha::Float32)
+    ccall(dlsym(libcublas, :cublasSscal),
+          Void, (Int32, Float32, Ptr{Float32}, Int32),
+          num, alpha, x, 1)
 end
 
 # Dot product
-function cuda_dot{T}(num::Int32, x::Ptr{T}, y::Ptr{T})
-    if (T == Float64)
-        ccall(dlsym(libcublas, :cublasDdot),
-              Float64, (Int32, Ptr{T}, Int32, Ptr{T}, Int32),
-              num, x, 1, y, 1)
-    else
-        ccall(dlsym(libcublas, :cublasSdot),
-              Float32, (Int32, Ptr{T}, Int32, Ptr{T}, Int32),
-              num, x, 1, y, 1)
-    end 
+function cuda_dot(num::Int32, x::Ptr{Float64}, y::Ptr{Float64})
+    ccall(dlsym(libcublas, :cublasDdot),
+          Float64, (Int32, Ptr{Float64}, Int32, Ptr{Float64}, Int32),
+          num, x, 1, y, 1)
+end
+
+function cuda_dot(num::Int32, x::Ptr{Float32}, y::Ptr{Float32})
+    ccall(dlsym(libcublas, :cublasSdot),
+          Float32, (Int32, Ptr{Float32}, Int32, Ptr{Float32}, Int32),
+          num, x, 1, y, 1)
 end
