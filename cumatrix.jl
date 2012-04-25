@@ -95,7 +95,11 @@ curand(rows::Integer, cols::Integer) = curand(Float32, rows, cols)
 curandn(rows::Integer, cols::Integer) = curandn(Float32, rows, cols)
 
 function getptr(A::CuMatrix)
-    convert(Ptr{A.T}, A.ptr)
+    if (A.T == Float64)
+        convert(Ptr{Float64}, A.ptr)
+    else
+        convert(Ptr{Float32}, A.ptr)
+    end
 end
 
 # BLAS Functions
