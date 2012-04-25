@@ -81,93 +81,96 @@ function cuda_randn(T::Type, ptr::Ptr{Void}, count::Integer)
 end
 
 # Matrix multiply
-function cuda_gemm(transA::Char, transB::Char,
-                   m::Int32, n::Int32, k::Int32,
-                   alpha::Float64, A::Ptr{Float64}, lda::Int32,
-                   B::Ptr{Float64}, ldb::Int32, beta::Float64,
-                   C::Ptr{Float64}, ldc::Int32)
-    ccall(dlsym(libcublas, :cublasDgemm),
-          Void, (Char, Char, Int32, Int32, Int32,
-                 Float64, Ptr{Float64}, Int32, Ptr{Float64}, Int32,
-                 Float64, Ptr{Float64}, Int32),
-          transA, transB, m, n, k, alpha, A, lda, B, ldb,
-          beta, C, ldc)
+for (fname, elty) in ((:cublasSgemm, :Float32), 
+                      (:cublasDgemm, :Float64),
+                      (:cublasCgemm, :Complex64), 
+                      (:cublasZgemm, :Complex128))
+    @eval begin
+        function cuda_gemm(transA::Char, transB::Char,
+                           m::Int32, n::Int32, k::Int32,
+                           alpha::($elty), A::Ptr{$elty}, lda::Int32,
+                           B::Ptr{$elty}, ldb::Int32, beta::($elty),
+                           C::Ptr{$elty}, ldc::Int32)
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Char, Char, Int32, Int32, Int32,
+                         $elty, Ptr{$elty}, Int32, Ptr{$elty}, Int32,
+                         $elty, Ptr{$elty}, Int32),
+                  transA, transB, m, n, k, alpha, A, lda, B, ldb,
+                  beta, C, ldc)
+        end
+    end
 end
-
-function cuda_gemm(transA::Char, transB::Char,
-                   m::Int32, n::Int32, k::Int32,
-                   alpha::Float32, A::Ptr{Float32}, lda::Int32,
-                   B::Ptr{Float32}, ldb::Int32, beta::Float32,
-                   C::Ptr{Float32}, ldc::Int32)
-    ccall(dlsym(libcublas, :cublasSgemm),
-          Void, (Char, Char, Int32, Int32, Int32,
-                 Float32, Ptr{Float32}, Int32, Ptr{Float32}, Int32,
-                 Float32, Ptr{Float32}, Int32),
-          transA, transB, m, n, k, alpha, A, lda, B, ldb,
-          beta, C, ldc)
-end                  
 
 # Find the index of the absolute maximum value
-function cuda_amax(num::Int32, x::Ptr{Float64})
-    ccall(dlsym(libcublas, :cublasIdamax),
-          Int32, (Int32, Ptr{Float64}, Int32),
-          num, x, 1)
-end
-
-function cuda_amax(num::Int32, x::Ptr{Float32})
-    ccall(dlsym(libcublas, :cublasIsamax),
-          Int32, (Int32, Ptr{Float32}, Int32),
-          num, x, 1)
+for (fname, elty) in ((:cublasIdamax, :Float64), 
+                      (:cublasIsamax, :Float32),
+                      (:cublasIcamax, :Complex64), 
+                      (:cublasIzamax, :Complex128))
+    @eval begin
+        function cuda_amax(num::Int32, x::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Int32, (Int32, Ptr{$elty}, Int32),
+                  num, x, 1)
+        end
+    end
 end
 
 # Find the index of the absolute minimum value
-function cuda_amin(num::Int32, x::Ptr{Float64})
-    ccall(dlsym(libcublas, :cublasIdamin),
-          Int32, (Int32, Ptr{Float64}, Int32),
-          num, x, 1)
-end
-
-function cuda_amin(num::Int32, x::Ptr{Float32})
-    ccall(dlsym(libcublas, :cublasIsamin),
-          Int32, (Int32, Ptr{Float32}, Int32),
-          num, x, 1)
+for (fname, elty) in ((:cublasIdamin, :Float64), 
+                      (:cublasIsamin, :Float32),
+                      (:cublasIcamin, :Complex64), 
+                      (:cublasIzamin, :Complex128))
+    @eval begin
+        function cuda_amin(num::Int32, x::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Int32, (Int32, Ptr{$elty}, Int32),
+                  num, x, 1)
+        end
+    end
 end
 
 # Find the sum of absolute values
-function cuda_asum(num::Int32, x::Ptr{Float64})
-    ccall(dlsym(libcublas, :cublasDasum),
-          Float64, (Int32, Ptr{Float64}, Int32),
-          num, x, 1)
-end
-
-function cuda_asum(num::Int32, x::Ptr{Float32})
-    ccall(dlsym(libcublas, :cublasSasum),
-          Float32, (Int32, Ptr{Float32}, Int32),
-          num, x, 1)
+for (fname, elty) in ((:cublasDasum, :Float64), 
+                      (:cublasSasum, :Float32),
+                      (:cublasScasum, :Complex64), 
+                      (:cublasDzasum, :Complex128))
+    @eval begin
+        function cuda_asum(num::Int32, x::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  $elty, (Int32, Ptr{$elty}, Int32),
+                  num, x, 1)
+        end
+    end
 end
 
 # Scale the matrix
-function cuda_scal(num::Int32, x::Ptr{Float64}, alpha::Float64)
-    ccall(dlsym(libcublas, :cublasDscal),
-          Void, (Int32, Float64, Ptr{Float64}, Int32),
-          num, alpha, x, 1)
-end
-
-function cuda_scal(num::Int32, x::Ptr{Float32}, alpha::Float32)
-    ccall(dlsym(libcublas, :cublasSscal),
-          Void, (Int32, Float32, Ptr{Float32}, Int32),
-          num, alpha, x, 1)
+for (fname, elty1, elty2) in ((:cublasSscal, :Float32, :Float32), 
+                              (:cublasDscal, :Float64, :Float64),
+                              (:cublasCscal, :Complex64, :Complex64),
+                              (:cublasCsscal, :Float32, :Complex64),
+                              (:cublasZscal, :Complex128, :Complex128),
+                              (:cublasZdscal, :Float64, :Complex128))
+    @eval begin
+        function cuda_scal(num::Int32, x::Ptr{$elty2}, alpha::($elty1))
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Int32, $elty1, Ptr{$elty2}, Int32),
+                  num, alpha, x, 1)
+        end
+    end
 end
 
 # Dot product
-function cuda_dot(num::Int32, x::Ptr{Float64}, y::Ptr{Float64})
-    ccall(dlsym(libcublas, :cublasDdot),
-          Float64, (Int32, Ptr{Float64}, Int32, Ptr{Float64}, Int32),
-          num, x, 1, y, 1)
-end
-
-function cuda_dot(num::Int32, x::Ptr{Float32}, y::Ptr{Float32})
-    ccall(dlsym(libcublas, :cublasSdot),
-          Float32, (Int32, Ptr{Float32}, Int32, Ptr{Float32}, Int32),
-          num, x, 1, y, 1)
+for (fname, elty) in ((:cublasSdot, :Float32, :Float32), 
+                      (:cublasDdot, :Float64, :Float64),
+                      (:cublasCdotu, :Complex64, :Complex64),
+                      (:cublasCdotc, :Complex64, :Complex64),
+                      (:cublasZdotu, :Complex128, :Complex128),
+                      (:cublasZdotc, :Complex128, :Complex128))
+    @eval begin
+        function cuda_dot(num::Int32, x::Ptr{$elty}, y::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Float64, (Int32, Ptr{$elty}, Int32, Ptr{$elty}, Int32),
+                  num, x, 1, y, 1)
+        end
+    end
 end
