@@ -160,17 +160,60 @@ for (fname, elty1, elty2) in ((:cublasSscal, :Float32, :Float32),
 end
 
 # Dot product
-for (fname, elty) in ((:cublasSdot, :Float32, :Float32), 
-                      (:cublasDdot, :Float64, :Float64),
-                      (:cublasCdotu, :Complex64, :Complex64),
-                      (:cublasCdotc, :Complex64, :Complex64),
-                      (:cublasZdotu, :Complex128, :Complex128),
-                      (:cublasZdotc, :Complex128, :Complex128))
+for (fname, elty) in ((:cublasSdot, :Float32),
+                      (:cublasDdot, :Float64),
+                      (:cublasCdotu, :Complex64),
+                      (:cublasCdotc, :Complex64),
+                      (:cublasZdotu, :Complex128),
+                      (:cublasZdotc, :Complex128))
     @eval begin
         function cuda_dot(num::Int32, x::Ptr{$elty}, y::Ptr{$elty})
             ccall(dlsym(libcublas, $string(fname)),
-                  Float64, (Int32, Ptr{$elty}, Int32, Ptr{$elty}, Int32),
+                  ($elty) , (Int32, Ptr{$elty}, Int32, Ptr{$elty}, Int32),
                   num, x, 1, y, 1)
+        end
+    end
+end
+
+for (fname, elty) in ((:cublasSaxpy, :Float32),
+                      (:cublasDaxpy, :Float64),
+                      (:cublasCaxpy, :Complex64),
+                      (:cublasZaxpy, :Complex128))
+    @eval begin
+        function cuda_axpy(n::Int32, alpha::($elty), x::Ptr{$elty}, y::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Int32, $elty, Ptr{$elty}, Int32, 
+                         Ptr{$elty}, Int32),
+                  n, alpha, x, 1, y, 1)
+        end
+    end
+end
+
+# copy matrix
+for (fname, elty) in ((:cublasScopy, :Float32),
+                      (:cublasDcopy, :Float64),
+                      (:cublasCcopy, :Complex64),
+                      (:cublasZcopy, :Complex128))
+    @eval begin
+        function cuda_copy(n::Int32, x::Ptr{$elty}, y::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Int32, Ptr{$elty}, Int32, 
+                         Ptr{$elty}, Int32),
+                  n, x, 1, y, 1)
+        end
+    end
+end
+
+# Norm
+for (fname, elty) in ((:cublasSnrm2, :Float32),
+                      (:cublasDnrm2, :Float64),
+                      (:cublasScnrm2, :Complex64),
+                      (:cublasDznrm2, :Complex128))
+    @eval begin
+        function cuda_nrm2(n::Int32, x::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  ($elty), (Int32, Ptr{$elty}, Int32),
+                  n, x, 1)
         end
     end
 end
