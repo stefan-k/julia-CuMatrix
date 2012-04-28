@@ -217,3 +217,72 @@ for (fname, elty) in ((:cublasSnrm2, :Float32),
         end
     end
 end
+
+# Swap
+for (fname, elty) in ((:cublasSswap, :Float32),
+                      (:cublasDswap, :Float64),
+                      (:cublasCswap, :Complex64),
+                      (:cublasZswap, :Complex128))
+    @eval begin
+        function cuda_swap(n::Int32, x::Ptr{$elty}, y::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Int32, Ptr{$elty}, Int32, Ptr{$elty}, Int32, Ptr{$elty}, Int32),
+                  n, x, 1, y, 1)
+        end
+    end
+end
+
+# Rotate
+for (fname, elty1, elty2, elty3) in ((:cublasSrot, :Float32, :Float32, :Float32),
+                                     (:cublasDrot, :Float64, :Float64, :Float64),
+                                     (:cublasCrot, :Complex64, :Float32, :Complex64),
+                                     (:cublasZrot, :Complex128, :Float64, :Complex128),
+                                     (:cublasCsrot, :Complex64, :Float32, :Float32),
+                                     (:cublasZdrot, :Complex128, :Float64, :Float64))
+    @eval begin
+        function cuda_rot(n::Int32, x::Ptr{$elty1}, y::Ptr{$elty1}, sc::($elty2), ss::($elty3))
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Int32, Ptr{$elty1}, Int32, Ptr{$elty1}, Int32, $elty2, $elty3),
+                  n, x, 1, y, 1, sc, ss)
+        end
+    end
+end
+
+# rotg
+for (fname, elty1, elty2) in ((:cublasSrotg, :Float32, :Float32),
+                              (:cublasDrotg, :Float64, :Float64),
+                              (:cublasCrotg, :Complex64, :Float32),
+                              (:cublasZrotg, :Complex128, :Float64))
+    @eval begin
+        function cuda_rotg(sa::Ptr{$elty1}, sb::Ptr{$elty1}, sc::Ptr{$elty2}, ss::Ptr{$elty1})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Ptr{$elty1}, Ptr{$elty1}, Ptr{$elty2}, Ptr{$elty1}),
+                  sa, sb, sc, ss)
+        end
+    end
+end
+
+# rotm
+for (fname, elty) in ((:cublasSrotm, :Float32),
+                      (:cublasDrotm, :Float64))
+    @eval begin
+        function cuda_rotm(n::Int32, x::Ptr{$elty}, y::Ptr{$elty}, sparam::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Int32, Ptr{$elty}, Int32, Ptr{$elty}, Int32, Ptr{$elty}),
+                  n, x, 1, y, 1, sparam)
+        end
+    end
+end
+
+# rotmg
+for (fname, elty) in ((:cublasSrotmg, :Float32),
+                      (:cublasDrotmg, :Float64))
+    @eval begin
+        function cuda_rotmg(sd1::Ptr{$elty}, sd2::Ptr{$elty}, sx1::Ptr{$elty}, 
+                            sy1::Ptr{$elty}, sparam::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Ptr{$elty}, Ptr{$elty}, Ptr{$elty}, Ptr{$elty}, Ptr{$elty}),
+                  sd1, sd2, sx1, sy1, sparam)
+        end
+    end
+end
