@@ -128,23 +128,9 @@ function (*)(A::CuMatrix, B::CuMatrix)
     return C
 end
 
-function amax(A::CuMatrix)
-    n = numel(Int32, A)
-    ptr = getptr(A)
-    cuda_amax(n, ptr)
-end
-
-function amin(A::CuMatrix)
-    n = numel(Int32, A)
-    ptr = getptr(A)
-    cuda_amin(n, ptr)
-end
-
-function asum(A::CuMatrix)
-    n = numel(Int32, A)
-    ptr = getptr(A)
-    cuda_asum(n, ptr)
-end
+amax(A::CuMatrix) = cuda_amax(numel(Int32, A), getptr(A))
+amin(A::CuMatrix) = cuda_amin(numel(Int32, A), getptr(A))
+asum(A::CuMatrix) = cuda_asum(numel(Int32, A), getptr(A))
 
 function (*)(A::CuMatrix, alpha)
     n = numel(Int32, A)
