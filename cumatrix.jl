@@ -53,7 +53,7 @@ end
 # Perform a deep copy
 function copy(in::CuMatrix)
     ptr = cuda_malloc(in.T, in.dims)
-    bytes::Int32 = in.dims[1] * in.dims[2] * sizeof(in.T)
+    bytes::Int32 = numel(in) * sizeof(in.T)
     mem_copy(ptr, in.ptr, bytes)
     CuMatrix(in.T, ptr, in.dims)
 end
@@ -67,6 +67,10 @@ end
 function show(in::CuMatrix)
     print(in)
 end
+
+# Return Number of Elements
+numel(A::CuMatrix) = A.dims[1]*A.dims[2]
+numel(T::Type, A::CuMatrix) = convert(T, numel(A))
 
 # Freeing memory
 function CuFree(in::CuMatrix)
@@ -125,25 +129,25 @@ function (*)(A::CuMatrix, B::CuMatrix)
 end
 
 function amax(A::CuMatrix)
-    n = convert(Int32, A.dims[1] * A.dims[2])
+    n = numel(Int32, A)
     ptr = getptr(A)
     cuda_amax(n, ptr)
 end
 
 function amin(A::CuMatrix)
-    n = convert(Int32, A.dims[1] * A.dims[2])
+    n = numel(Int32, A)
     ptr = getptr(A)
     cuda_amin(n, ptr)
 end
 
 function asum(A::CuMatrix)
-    n = convert(Int32, A.dims[1] * A.dims[2])
+    n = numel(Int32, A)
     ptr = getptr(A)
     cuda_asum(n, ptr)
 end
 
 function (*)(A::CuMatrix, alpha)
-    n = convert(Int32, A.dims[1] * A.dims[2])
+    n = numel(Int32, A)
     B = copy(A)
     alpha = convert(A.T, alpha)
     ptr = getptr(B)
@@ -157,8 +161,8 @@ function dot(A::CuMatrix, B::CuMatrix)
         error("Precision mismatch in Dot product")
     end
    
-    n = convert(Int32, A.dims[1] * A.dims[2])
-    m = convert(Int32, B.dims[1] * B.dims[2])
+    n = numel(Int32, A)
+    m = numel(Int32, A)
 
     if m != n
         error("Size mismatch in Dot product")
