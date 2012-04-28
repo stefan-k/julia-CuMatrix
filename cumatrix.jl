@@ -3,7 +3,7 @@ include("cuda.jl")
 # The CuMatrix class
 type CuMatrix
     T::Type
-    ptr::Ptr{Void}
+    ptr::Ptr
     dims::(Integer,Integer)
 
     # Construct Matrix on device
@@ -97,14 +97,6 @@ end
 curand(rows::Integer, cols::Integer) = curand(Float32, rows, cols)
 curandn(rows::Integer, cols::Integer) = curandn(Float32, rows, cols)
 
-function getptr(A::CuMatrix)
-    if (A.T == Float64)
-        convert(Ptr{Float64}, A.ptr)
-    else
-        convert(Ptr{Float32}, A.ptr)
-    end
-end
-
 # BLAS Functions
 function (*)(A::CuMatrix, B::CuMatrix)
     if (A.dims[2] != B.dims[1])
@@ -119,25 +111,21 @@ function (*)(A::CuMatrix, B::CuMatrix)
     n = convert(Int32, C.dims[2])
     k = convert(Int32, B.dims[1])
     
-    ptrA = getptr(A)
-    ptrB = getptr(B)
-    ptrC = getptr(C)
     cuda_gemm('N', 'N', m, n, k,
-            one(A.T), ptrA, m, ptrB, k,
-            zero(A.T), ptrC, m)
+            one(A.T), A.ptr, m, B.ptr, k,
+            zero(A.T), C.ptr, m)
     return C
 end
 
-amax(A::CuMatrix) = cuda_amax(numel(Int32, A), getptr(A))
-amin(A::CuMatrix) = cuda_amin(numel(Int32, A), getptr(A))
-asum(A::CuMatrix) = cuda_asum(numel(Int32, A), getptr(A))
+amax(A::CuMatrix) = cuda_amax(numel(Int32, A), A.ptr)
+amin(A::CuMatrix) = cuda_amin(numel(Int32, A), A.ptr)
+asum(A::CuMatrix) = cuda_asum(numel(Int32, A), A.ptr)
 
 function (*)(A::CuMatrix, alpha)
     n = numel(Int32, A)
     B = copy(A)
     alpha = convert(A.T, alpha)
-    ptr = getptr(B)
-    cuda_scal(n, ptr, alpha)
+    cuda_scal(n, B.ptr, alpha)
     return B
 end
 
@@ -153,9 +141,7 @@ function dot(A::CuMatrix, B::CuMatrix)
         error("Size mismatch in Dot product")
     end
 
-    ptrA = getptr(A)
-    ptrB = getptr(B)
-    cuda_dot(n, ptrA, ptrB)
+    cuda_dot(n, A.ptr, B.ptr)
 end
 
-nrm2(A::CuMatrix) = cuda_nrm2(numel(Int32, A), getptr(A))
+nrm2(A::CuMatrix) = cuda_nrm2(numel(Int32, A), A.ptr)

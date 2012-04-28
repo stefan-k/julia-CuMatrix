@@ -8,17 +8,17 @@ function cuda_info()
 end
 
 # Allocate device memory
-function cuda_malloc(T::Type, count::Integer)
-    ptr::Ptr{Void} = ccall(dlsym(libcuplus, :cuda_malloc),
-                           Ptr{Void}, (Integer, ),
-                           count * sizeof(T))
+function cuda_malloc{T}(T::Type{T}, count::Integer)
+    ptr = ccall(dlsym(libcuplus, :cuda_malloc),
+                Ptr{T}, (Integer, ),
+                count * sizeof(T))
     if ptr == C_NULL
         # If unable to allocate, call garbage collector
         gc()
         # Try allocating again
-        ptr::Ptr{Void} = ccall(dlsym(libcuplus, :cuda_malloc),
-                               Ptr{Void}, (Integer, ),
-                               count * sizeof(T))
+        ptr = ccall(dlsym(libcuplus, :cuda_malloc),
+                    Ptr{T}, (Integer, ),
+                    count * sizeof(T))
     end
 
     if ptr == C_NULL
@@ -38,27 +38,25 @@ function cuda_free(ptr::Ptr{Void})
 end
 
 # Copy from Host to Device Memory
-function mem_device(dst::Ptr{Void}, src::Matrix)
-    bytes::Int32 = sizeof(eltype(src)) * numel(src)
+function mem_device{T}(dst::Ptr{T}, src::Matrix{T})
+    bytes::Int32 = sizeof(T) * numel(src)
     ccall(dlsym(libcuplus, :cuda_memcpy_h2d),
-          Void, (Ptr{Void}, Ptr{Void}, Int32),
+          Void, (Ptr{T}, Ptr{T}, Int32),
           dst, src, bytes)
-          
 end
 
 # Copy from Device to Host Memory
-function mem_host(dst::Matrix, src::Ptr{Void})
-    bytes::Int32 = sizeof(eltype(dst)) * numel(dst)
+function mem_host{T}(dst::Matrix, src::Ptr{T})
+    bytes::Int32 = sizeof(T) * numel(dst)
     ccall(dlsym(libcuplus, :cuda_memcpy_d2h),
-          Void, (Ptr{Void}, Ptr{Void}, Int32),
+          Void, (Ptr{T}, Ptr{T}, Int32),
           dst, src, bytes)
-          
 end
 
 # Copy from Device to Device Memory
-function mem_copy(dst::Ptr{Void}, src::Ptr{Void}, bytes::Int32)
+function mem_copy{T}(dst::Ptr{T}, src::Ptr{T}, bytes::Int32)
     ccall(dlsym(libcuplus, :cuda_memcpy_d2d),
-          Void, (Ptr{Void}, Ptr{Void}, Int32),
+          Void, (Ptr{T}, Ptr{T}, Int32),
           dst, src, bytes)
 end
 
