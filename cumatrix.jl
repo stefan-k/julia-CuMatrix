@@ -156,7 +156,6 @@ function (*)(A::CuMatrix, alpha)
 end
 
 function dot(A::CuMatrix, B::CuMatrix)
-
     if A.T != B.T
         error("Precision mismatch in Dot product")
     end
@@ -172,3 +171,5 @@ function dot(A::CuMatrix, B::CuMatrix)
     ptrB = getptr(B)
     cuda_dot(n, ptrA, ptrB)
 end
+
+nrm2(A::CuMatrix) = cuda_nrm2(numel(Int32, A), getptr(A))
