@@ -31,7 +31,7 @@ cuda_malloc(T::Type, rows::Integer, cols::Integer) = cuda_malloc(T, rows * cols)
 cuda_malloc(T::Type, dims::(Integer, Integer)) = cuda_malloc(T, dims[1] * dims[2])
 
 # Free device memory
-function cuda_free(ptr::Ptr{Void})
+function cuda_free(ptr::Ptr)
     ccall(dlsym(libcuplus, :cuda_free),
           Void, (Integer, ),
           ptr)
