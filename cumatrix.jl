@@ -28,7 +28,7 @@ type CuMatrix
     end
 
     # Constructor with existing device pointer
-    function CuMatrix(T::Type, ptr::Ptr{Void}, dims::(Integer, Integer))
+    function CuMatrix{T}(ptr::Ptr{T}, dims::(Integer, Integer))
         Res = new(T, ptr, dims)
         finalizer(Res, CuFree)
         Res
@@ -45,17 +45,17 @@ end
 
 # Get matrix from device to host
 function Array(in::CuMatrix)
-    out = Array(in.T, in.dims[1], in.dims[2])
+    out = Array(eltype(in), in.dims[1], in.dims[2])
     mem_host(out, in.ptr)
     return out
 end
 
 # Perform a deep copy
 function copy(in::CuMatrix)
-    ptr = cuda_malloc(in.T, in.dims)
-    bytes::Int32 = numel(in) * sizeof(in.T)
+    ptr = cuda_malloc(eltype(in), in.dims)
+    bytes::Int32 = numel(in) * sizeof(eltype(in))
     mem_copy(ptr, in.ptr, bytes)
-    CuMatrix(in.T, ptr, in.dims)
+    CuMatrix(ptr, in.dims)
 end
 
 # Display function
@@ -68,9 +68,12 @@ function show(in::CuMatrix)
     print(in)
 end
 
-# Return Number of Elements
+# Return number of elements
 numel(A::CuMatrix) = A.dims[1]*A.dims[2]
 numel(T::Type, A::CuMatrix) = convert(T, numel(A))
+
+# Return type of elements
+eltype(A::CuMatrix) = A.T
 
 # Freeing memory
 function CuFree(in::CuMatrix)
@@ -102,10 +105,10 @@ function (*)(A::CuMatrix, B::CuMatrix)
     if (A.dims[2] != B.dims[1])
         error("Inner dimension mismatch in Matrix multiply")
     end
-    if (A.T != B.T)
+    if (eltype(A) != eltype(B))
         error("Precision mismatch in Matrix multiply")
     end
-    C = CuMatrix(A.T, (A.dims[1], B.dims[2]))
+    C = CuMatrix(eltype(A), (A.dims[1], B.dims[2]))
 
     m = convert(Int32, C.dims[1])
     n = convert(Int32, C.dims[2])
@@ -124,13 +127,13 @@ asum(A::CuMatrix) = cuda_asum(numel(Int32, A), A.ptr)
 function (*)(A::CuMatrix, alpha)
     n = numel(Int32, A)
     B = copy(A)
-    alpha = convert(A.T, alpha)
+    alpha = convert(eltype(A), alpha)
     cuda_scal(n, B.ptr, alpha)
     return B
 end
 
 function dot(A::CuMatrix, B::CuMatrix)
-    if A.T != B.T
+    if eltype(A) != eltype(B)
         error("Precision mismatch in Dot product")
     end
    
