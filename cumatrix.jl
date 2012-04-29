@@ -3,7 +3,7 @@ include("cuda.jl")
 # The CuMatrix class
 type CuMatrix
     T::Type
-    ptr::Ptr{Void}
+    ptr::Ptr
     dims::(Integer,Integer)
 
     # Construct Matrix on device
@@ -18,8 +18,7 @@ type CuMatrix
     end
 
     # Copy Matrix from host
-    function CuMatrix(in::Matrix)
-        T = eltype(in)
+    function CuMatrix{T}(in::Matrix{T})
         dims = size(in)
         ptr = cuda_malloc(T, dims)
         mem_device(ptr, in)
@@ -29,7 +28,7 @@ type CuMatrix
     end
 
     # Constructor with existing device pointer
-    function CuMatrix(T::Type, ptr::Ptr{Void}, dims::(Integer, Integer))
+    function CuMatrix{T}(ptr::Ptr{T}, dims::(Integer, Integer))
         Res = new(T, ptr, dims)
         finalizer(Res, CuFree)
         Res
@@ -46,17 +45,17 @@ end
 
 # Get matrix from device to host
 function Array(in::CuMatrix)
-    out = Array(in.T, in.dims[1], in.dims[2])
+    out = Array(eltype(in), in.dims[1], in.dims[2])
     mem_host(out, in.ptr)
     return out
 end
 
 # Perform a deep copy
 function copy(in::CuMatrix)
-    ptr = cuda_malloc(in.T, in.dims)
-    bytes::Int32 = in.dims[1] * in.dims[2] * sizeof(in.T)
+    ptr = cuda_malloc(eltype(in), in.dims)
+    bytes::Int32 = numel(in) * sizeof(eltype(in))
     mem_copy(ptr, in.ptr, bytes)
-    CuMatrix(in.T, ptr, in.dims)
+    CuMatrix(ptr, in.dims)
 end
 
 # Display function
@@ -68,6 +67,13 @@ end
 function show(in::CuMatrix)
     print(in)
 end
+
+# Return number of elements
+numel(A::CuMatrix) = A.dims[1]*A.dims[2]
+numel(T::Type, A::CuMatrix) = convert(T, numel(A))
+
+# Return type of elements
+eltype(A::CuMatrix) = A.T
 
 # Freeing memory
 function CuFree(in::CuMatrix)
@@ -94,78 +100,51 @@ end
 curand(rows::Integer, cols::Integer) = curand(Float32, rows, cols)
 curandn(rows::Integer, cols::Integer) = curandn(Float32, rows, cols)
 
-function getptr(A::CuMatrix)
-    if (A.T == Float64)
-        convert(Ptr{Float64}, A.ptr)
-    else
-        convert(Ptr{Float32}, A.ptr)
-    end
-end
-
 # BLAS Functions
 function (*)(A::CuMatrix, B::CuMatrix)
     if (A.dims[2] != B.dims[1])
         error("Inner dimension mismatch in Matrix multiply")
     end
-    if (A.T != B.T)
+    if (eltype(A) != eltype(B))
         error("Precision mismatch in Matrix multiply")
     end
-    C = CuMatrix(A.T, (A.dims[1], B.dims[2]))
+    C = CuMatrix(eltype(A), (A.dims[1], B.dims[2]))
 
     m = convert(Int32, C.dims[1])
     n = convert(Int32, C.dims[2])
     k = convert(Int32, B.dims[1])
     
-    ptrA = getptr(A)
-    ptrB = getptr(B)
-    ptrC = getptr(C)
     cuda_gemm('N', 'N', m, n, k,
-            one(A.T), ptrA, m, ptrB, k,
-            zero(A.T), ptrC, m)
+            one(A.T), A.ptr, m, B.ptr, k,
+            zero(A.T), C.ptr, m)
     return C
 end
 
-function amax(A::CuMatrix)
-    n = convert(Int32, A.dims[1] * A.dims[2])
-    ptr = getptr(A)
-    cuda_amax(n, ptr)
-end
-
-function amin(A::CuMatrix)
-    n = convert(Int32, A.dims[1] * A.dims[2])
-    ptr = getptr(A)
-    cuda_amin(n, ptr)
-end
-
-function asum(A::CuMatrix)
-    n = convert(Int32, A.dims[1] * A.dims[2])
-    ptr = getptr(A)
-    cuda_asum(n, ptr)
-end
+amax(A::CuMatrix) = cuda_amax(numel(Int32, A), A.ptr)
+amin(A::CuMatrix) = cuda_amin(numel(Int32, A), A.ptr)
+asum(A::CuMatrix) = cuda_asum(numel(Int32, A), A.ptr)
 
 function (*)(A::CuMatrix, alpha)
-    n = convert(Int32, A.dims[1] * A.dims[2])
+    n = numel(Int32, A)
     B = copy(A)
-    alpha = convert(A.T, alpha)
-    ptr = getptr(B)
-    cuda_scal(n, ptr, alpha)
+    alpha = convert(eltype(A), alpha)
+    cuda_scal(n, B.ptr, alpha)
     return B
 end
 
 function dot(A::CuMatrix, B::CuMatrix)
-
-    if A.T != B.T
+    if eltype(A) != eltype(B)
         error("Precision mismatch in Dot product")
     end
    
-    n = convert(Int32, A.dims[1] * A.dims[2])
-    m = convert(Int32, B.dims[1] * B.dims[2])
+    n = numel(Int32, A)
+    m = numel(Int32, A)
 
     if m != n
         error("Size mismatch in Dot product")
     end
 
-    ptrA = getptr(A)
-    ptrB = getptr(B)
-    cuda_dot(n, ptrA, ptrB)
+    cuda_dot(n, A.ptr, B.ptr)
 end
+
+nrm2(A::CuMatrix) = cuda_nrm2(numel(Int32, A), A.ptr)
