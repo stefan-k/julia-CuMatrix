@@ -1,5 +1,4 @@
 #include <stdio.h>
-//#include <cufft.h>
 #define API extern "C" __attribute__((visibility("default")))
 
 // CUDART+ functions
@@ -15,6 +14,8 @@ API void cuda_randn(void *ptr, int numel, bool dbl);
 
 // CUFFT functions
 API unsigned int cuda_cufftPlan1d(int nx, int type, int batch);
+API unsigned int cuda_cufftPlan2d(int nx, int ny, int type);
+API unsigned int cuda_cufftPlan3d(int nx, int ny, int nz, int type);
 
 // Return error
 API int cuda_last_error();

@@ -11,7 +11,7 @@ CUDALIB=$(CUDADIR)/lib$(BIT)
 CFLAGS+=-I$(CUDADIR)/include
 CXXFLAGS=$(CFLAGS)
 LDFLAGS+=-shared -Wl,-soname,libcuplus.so -o $(TARGET)
-LDFLAGS+=-L$(CUDALIB) -lcudart -lcurand -Wl,-rpath,$(CUDALIB)
+LDFLAGS+=-L$(CUDALIB) -lcudart -lcurand -lcufft -Wl,-rpath,$(CUDALIB)
 LDFLAGS+=-fPIC
 SRC+=$(shell ls *.cpp)
 
