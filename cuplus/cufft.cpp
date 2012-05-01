@@ -24,3 +24,10 @@ unsigned int cuda_cufftPlan3d(int nx, int ny, int nz, int type)
     cufftPlan3d(&ptr, nx, ny, nz, (cufftType)type);
     return ptr;
 }
+
+int cuda_cufftGetVersion()
+{
+    int version;
+    cufftGetVersion(&version);
+    return version;
+}

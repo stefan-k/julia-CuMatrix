@@ -16,6 +16,7 @@ API void cuda_randn(void *ptr, int numel, bool dbl);
 API unsigned int cuda_cufftPlan1d(int nx, int type, int batch);
 API unsigned int cuda_cufftPlan2d(int nx, int ny, int type);
 API unsigned int cuda_cufftPlan3d(int nx, int ny, int nz, int type);
+API int cuda_cufftGetVersion();
 
 // Return error
 API int cuda_last_error();

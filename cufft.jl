@@ -80,4 +80,9 @@ function cufftSetCompatibilityMode(plan::Uint32, mode::Int32)
           Void, (Uint32, Int32), plan, mode)
 end
 
+function cufftGetVersion()
+    ccall(dlsym(libcuplus, :cuda_cufftGetVersion),
+          Int32, ())
+end
+
 #cufftExecC2C(plan::Uint32, idata::CuMatrix, odata::CuMatrix, direction::Int32) = cufftExecC2C(plan, idata.ptr, odata.ptr, direction)
