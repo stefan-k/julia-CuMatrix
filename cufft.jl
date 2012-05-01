@@ -25,3 +25,8 @@ function cufftPlan3d(nx::Int32, ny::Int32, nz::Int32, cufft_type::Int32)
           Uint32, (Int32, Int32, Int32, Int32),
           nx, ny, nz, cufft_type)
 end
+
+function cufftDestroy(plan::Uint32)
+    ccall(dlsym(libcufft, :cufftDestroy),
+          Void, (Uint32,), plan)
+end
