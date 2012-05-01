@@ -1,4 +1,5 @@
 #include <stdio.h>
+//#include <cufft.h>
 #define API extern "C" __attribute__((visibility("default")))
 
 // CUDART+ functions
@@ -11,6 +12,9 @@ API void cuda_memcpy_h2d(void *dst, void *src, int bytes);
 // CURAND+ functions
 API void cuda_rand (void *ptr, int numel, bool dbl);
 API void cuda_randn(void *ptr, int numel, bool dbl);
+
+// CUFFT functions
+API unsigned int cuda_cufftPlan1d(int nx, int type, int batch);
 
 // Return error
 API int cuda_last_error();
