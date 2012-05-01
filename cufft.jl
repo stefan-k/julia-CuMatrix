@@ -11,6 +11,11 @@ CUFFT_Z2Z = int32(0x69)
 CUFFT_FORWARD = int32(-1)
 CUFFT_INVERSE = int32(1)
 
+CUFFT_COMPATIBILITY_NATIVE          = int32(0x00)
+CUFFT_COMPATIBILITY_FFTW_PADDING    = int32(0x01)
+CUFFT_COMPATIBILITY_FFTW_ASYMMETRIC = int32(0x02)
+CUFFT_COMPATIBILITY_FFTW_ALL        = int32(0x03)
+
 function cufftPlan1d(nx::Int32, cufft_type::Int32, batch::Int32)
     ccall(dlsym(libcuplus, :cuda_cufftPlan1d),
           Uint32, (Int32, Int32, Int32),
@@ -68,6 +73,11 @@ function cufftExecZ2D(plan::Uint32, idata::Ptr{Complex128}, odata::Ptr{Float64})
     ccall(dlsym(libcufft, :cufftExecZ2D),
           Void, (Uint32, Ptr{Complex128}, Ptr{Float64}),
           plan, idata, odata)
+end
+
+function cufftSetCompatibilityMode(plan::Uint32, mode::Int32)
+    ccall(dlsym(libcufft, :cufftSetCompatibilityMode),
+          Void, (Uint32, Int32), plan, mode)
 end
 
 #cufftExecC2C(plan::Uint32, idata::CuMatrix, odata::CuMatrix, direction::Int32) = cufftExecC2C(plan, idata.ptr, odata.ptr, direction)
