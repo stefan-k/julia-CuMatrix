@@ -147,4 +147,17 @@ function dot(A::CuMatrix, B::CuMatrix)
     cuda_dot(n, A.ptr, B.ptr)
 end
 
+# Euclidean norm
 nrm2(A::CuMatrix) = cuda_nrm2(numel(Int32, A), A.ptr)
+
+# Thrust functions
+
+
+# lapack functions
+function norm(A::CuMatrix, p)
+    if (p == 2)
+        nrm2(A::CuMatrix)
+    else
+        error("norm not supported for p == ", p)
+    end
+end
