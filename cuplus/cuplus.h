@@ -19,6 +19,12 @@ API void cudaCrandn(cuComplex  *ptr, int numel);
 API void cudaDrandn(double  *ptr, int numel);
 API void cudaZrandn(cuDoubleComplex *ptr, int numel);
 
+// CUFFT functions
+API unsigned int cuda_cufftPlan1d(int nx, int type, int batch);
+API unsigned int cuda_cufftPlan2d(int nx, int ny, int type);
+API unsigned int cuda_cufftPlan3d(int nx, int ny, int nz, int type);
+API int cuda_cufftGetVersion();
+
 // Return error
 API int cuda_last_error();
 
