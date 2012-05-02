@@ -61,21 +61,33 @@ function mem_copy{T}(dst::Ptr{T}, src::Ptr{T}, bytes::Int32)
 end
 
 # Create uniform random Matrix
-function cuda_rand(T::Type, ptr::Ptr{Void}, count::Integer)
-    count = convert(Int32, count)
-    IsFloat64::Bool = (T == Float64)
-    ccall(dlsym(libcuplus, :cuda_rand),
-          Void, (Ptr{Void}, Int32, Bool),
-          ptr, count, IsFloat64)
+for (fname, elty) in ((:cudaSrand, :Float32),
+                      (:cudaDrand, :Float64),
+                      (:cudaCrand, :Complex64),
+                      (:cudaZrand, :Complex128))
+    @eval begin
+        function cuda_rand(ptr::Ptr{$elty}, count::Integer)
+            count = convert(Int32, count)
+            ccall(dlsym(libcuplus, $string(fname)),
+                  Void, (Ptr{$elty}, Int32),
+                  ptr, count)
+        end
+    end
 end
 
 # Create normal random Matrix
-function cuda_randn(T::Type, ptr::Ptr{Void}, count::Integer)
-    count = convert(Int32, count)
-    IsFloat64::Bool = (T == Float64)
-    ccall(dlsym(libcuplus, :cuda_randn),
-          Void, (Ptr{Void}, Int32, Bool),
-          ptr, count, IsFloat64)
+for (fname, elty) in ((:cudaSrandn, :Float32),
+                      (:cudaDrandn, :Float64),
+                      (:cudaCrandn, :Complex64),
+                      (:cudaZrandn, :Complex128))
+    @eval begin
+        function cuda_randn(ptr::Ptr{$elty}, count::Integer)
+            count = convert(Int32, count)
+            ccall(dlsym(libcuplus, $string(fname)),
+                  Void, (Ptr{$elty}, Int32),
+                  ptr, count)
+        end
+    end
 end
 
 # Matrix multiply

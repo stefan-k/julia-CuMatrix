@@ -38,3 +38,43 @@ void cuda_randn(void *ptr, int numel, bool dbl)
 
     return;
 }
+
+void cudaSrand(float *ptr, int numel)
+{
+    return cuda_rand((void *)ptr, numel, false);
+}
+
+void cudaDrand(double *ptr, int numel)
+{
+    return cuda_rand((void *)ptr, numel, true);
+}
+
+void cudaCrand(cuComplex *ptr, int numel)
+{
+    return cuda_rand((void *)ptr, 2*numel, false);
+}
+
+void cudaZrand(cuDoubleComplex *ptr, int numel)
+{
+    return cuda_rand((void *)ptr, 2*numel, true);
+}
+
+void cudaSrandn(float *ptr, int numel)
+{
+    return cuda_randn((void *)ptr, numel, false);
+}
+
+void cudaDrandn(double *ptr, int numel)
+{
+    return cuda_randn((void *)ptr, numel, true);
+}
+
+void cudaCrandn(cuComplex *ptr, int numel)
+{
+    return cuda_randn((void *)ptr, 2*numel, false);
+}
+
+void cudaZrandn(cuDoubleComplex *ptr, int numel)
+{
+    return cuda_randn((void *)ptr, 2*numel, true);
+}

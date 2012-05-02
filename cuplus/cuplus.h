@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <cublas.h>
 #define API extern "C" __attribute__((visibility("default")))
 
 // CUDART+ functions
@@ -9,8 +10,14 @@ API void cuda_memcpy_d2d(void *dst, void *src, int bytes);
 API void cuda_memcpy_h2d(void *dst, void *src, int bytes);
 
 // CURAND+ functions
-API void cuda_rand (void *ptr, int numel, bool dbl);
-API void cuda_randn(void *ptr, int numel, bool dbl);
+API void cudaSrand(float   *ptr, int numel);
+API void cudaDrand(cuComplex  *ptr, int numel);
+API void cudaCrand(double  *ptr, int numel);
+API void cudaZrand(cuDoubleComplex *ptr, int numel);
+API void cudaSrandn(float   *ptr, int numel);
+API void cudaCrandn(cuComplex  *ptr, int numel);
+API void cudaDrandn(double  *ptr, int numel);
+API void cudaZrandn(cuDoubleComplex *ptr, int numel);
 
 // Return error
 API int cuda_last_error();

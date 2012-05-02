@@ -8,7 +8,8 @@ type CuMatrix
 
     # Construct Matrix on device
     function CuMatrix(T::Type, dims::(Integer, Integer))
-        if T != Float32 && T != Float64
+        if T != Float32   && T != Float64 &&
+           T != Complex64 && T != Complex128
             error("No integer or boolean support yet")
         end
         ptr = cuda_malloc(T, dims)
@@ -83,7 +84,7 @@ end
 # Random Number Generators
 function curand(T::Type, rows::Integer, cols::Integer)
     out = CuMatrix(T, rows, cols)
-    cuda_rand(T, out.ptr, rows * cols)
+    cuda_rand(out.ptr, rows * cols)
     return out
 end
 
@@ -92,7 +93,7 @@ function curandn(T::Type, rows::Integer, cols::Integer)
     count = rows * cols
     count += count & 1 # Increase the malloc size
     ptr = cuda_malloc(T, count)
-    cuda_randn(T, ptr, count)
+    cuda_randn(ptr, count)
     # But only use the required number of elements
     CuMatrix(T, ptr, (rows, cols))
 end
