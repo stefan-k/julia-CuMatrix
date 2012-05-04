@@ -129,7 +129,6 @@ asum(A::CuMatrix) = cuda_asum(numel(Int32, A), A.ptr)
 function (*)(A::CuMatrix, alpha)
     n = numel(Int32, A)
     B = copy(A)
-    alpha = convert(eltype(A), alpha)
     cuda_scal(n, B.ptr, alpha)
     return B
 end
