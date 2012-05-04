@@ -162,3 +162,14 @@ function norm(A::CuMatrix, p)
         error("norm not supported for p == ", p)
     end
 end
+
+# CUFFT functions
+cufftExec(plan::Uint32, idata::Ptr{Complex64}, odata::Ptr{Complex64}, direction::Int32) = cufftExecC2C(plan, idata, odata, direction)
+cufftExec(plan::Uint32, idata::Ptr{Float32}, odata::Ptr{Complex64}) = cufftExecR2C(plan, idata, odata)
+cufftExec(plan::Uint32, idata::Ptr{Complex64}, odata::Ptr{Float32}) = cufftExecC2R(plan, idata, odata)
+cufftExec(plan::Uint32, idata::Ptr{Complex128}, odata::Ptr{Complex128}, direction::Int32) = cufftExecZ2Z(plan, idata, odata, direction)
+cufftExec(plan::Uint32, idata::Ptr{Float64}, odata::Ptr{Complex128}) = cufftExecD2Z(plan, idata, odata)
+cufftExec(plan::Uint32, idata::Ptr{Complex128}, odata::Ptr{Float64}) = cufftExecZ2D(plan, idata, odata)
+cufftExec(plan::Uint32, idata::CuMatrix, odata::CuMatrix, direction::Int32) = cufftExec(plan, idata.ptr, odata.ptr, direction)
+cufftExec(plan::Uint32, idata::CuMatrix, odata::CuMatrix) = cufftExec(plan, idata.ptr, odata.ptr)
+

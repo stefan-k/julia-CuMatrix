@@ -34,6 +34,14 @@ function cufftPlan3d(nx::Int32, ny::Int32, nz::Int32, cufft_type::Int32)
           nx, ny, nz, cufft_type)
 end
 
+cufftPlan1d(nx::Integer, cufft_type::Int32, batch::Integer) = cufftPlan1d(int32(nx), cufft_type, int32(batch))
+cufftPlan1d(nx::Integer, cufft_type::Int32) = cufftPlan1d(int32(nx), cufft_type, int32(1))
+cufftPlan1d(nx::Integer) = cufftPlan1d(int32(nx), CUFFT_C2C, int32(1))
+cufftPlan2d(nx::Integer, ny::Integer, cufft_type::Int32) = cufftPlan2d(int32(nx), int32(ny), cufft_type)
+cufftPlan2d(nx::Integer, ny::Integer) = cufftPlan2d(int32(nx), int32(ny), CUFFT_C2C)
+cufftPlan3d(nx::Integer, ny::Integer, nz::Integer, cufft_type::Int32) = cufftPlan2d(int32(nx), int32(ny), int(nz), cufft_type)
+cufftPlan3d(nx::Integer, ny::Integer, nz::Integer) = cufftPlan2d(int32(nx), int32(ny), int(nz), CUFFT_C2C)
+
 function cufftDestroy(plan::Uint32)
     ccall(dlsym(libcufft, :cufftDestroy),
           Void, (Uint32,), plan)
@@ -75,14 +83,6 @@ function cufftExecZ2D(plan::Uint32, idata::Ptr{Complex128}, odata::Ptr{Float64})
           plan, idata, odata)
 end
 
-cufftExec(plan::Uint32, idata::Ptr{Complex64}, odata::Ptr{Complex64}, direction::Int32) = cufftExecC2C(plan, idata, odata, direction)
-cufftExec(plan::Uint32, idata::Ptr{Float32}, odata::Ptr{Complex64}) = cufftExecR2C(plan, idata, odata)
-cufftExec(plan::Uint32, idata::Ptr{Complex64}, odata::Ptr{Float32}) = cufftExecC2R(plan, idata, odata)
-cufftExec(plan::Uint32, idata::Ptr{Complex128}, odata::Ptr{Complex128}, direction::Int32) = cufftExecZ2Z(plan, idata, odata, direction)
-cufftExec(plan::Uint32, idata::Ptr{Float64}, odata::Ptr{Complex128}) = cufftExecD2Z(plan, idata, odata)
-cufftExec(plan::Uint32, idata::Ptr{Complex128}, odata::Ptr{Float64}) = cufftExecZ2D(plan, idata, odata)
-
-
 function cufftSetCompatibilityMode(plan::Uint32, mode::Int32)
     ccall(dlsym(libcufft, :cufftSetCompatibilityMode),
           Void, (Uint32, Int32), plan, mode)
@@ -92,5 +92,3 @@ function cufftGetVersion()
     ccall(dlsym(libcuplus, :cuda_cufftGetVersion),
           Int32, ())
 end
-
-#cufftExecC2C(plan::Uint32, idata::CuMatrix, odata::CuMatrix, direction::Int32) = cufftExecC2C(plan, idata.ptr, odata.ptr, direction)
