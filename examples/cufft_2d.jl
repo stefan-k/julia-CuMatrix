@@ -1,3 +1,6 @@
+## Example showing usage of the CUFFT wrappers
+# Author: Stefan Kroboth
+
 load("cumatrix.jl")
 
 print("CUFFT version: $(cufftGetVersion())\n\n")
@@ -11,7 +14,7 @@ plan = cufftPlan2d(sx, sy, CUFFT_C2C)
 
 # create data
 h_data = ones(Complex64, sx, sy)
-d_data = CuMatrix(h_data)
+d_data = CuMatrix(h_data)  # from host to device
 o_data = copy(d_data)
 d_data_inv = copy(d_data)
 
