@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <cuda.h>
 #include <cublas.h>
 #define API extern "C" __attribute__((visibility("default")))
 
@@ -30,3 +31,7 @@ API int cuda_last_error();
 
 // Other
 API void cuda_info();
+
+// CUDA Kernels
+API void *module_from_file(const char* filename);
+API void *get_function(CUmodule module, const char* filename);
