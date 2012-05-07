@@ -512,7 +512,7 @@ for (fname, elty) in ((:cublasSsyr2, :Float32),
                       (:cublasDsyr2, :Float64))
     @eval begin
         function cuda_syr2(uplo::Char, n::Int32, alpha::($elty), x::Ptr{$elty}, y::Ptr{$elty}
-                          A::Ptr{$elty}, lda::Int32)
+                           A::Ptr{$elty}, lda::Int32)
             ccall(dlsym(libcublas, $string(fname)),
                   Void, (Char, Int32, $elty, Ptr{$elty}, Int32, Ptr{$elty}, Int32, Ptr{$elty}, Int32),
                   uplo, n, alpha, x, 1, y, 1, A, lda)
@@ -525,10 +525,36 @@ for (fname, elty) in ((:cublasSher2, :Complex64),
                       (:cublasDher2, :Complex128))
     @eval begin
         function cuda_her2(uplo::Char, n::Int32, alpha::($elty), x::Ptr{$elty}, y::Ptr{$elty}
-                          A::Ptr{$elty}, lda::Int32)
+                           A::Ptr{$elty}, lda::Int32)
             ccall(dlsym(libcublas, $string(fname)),
                   Void, (Char, Int32, $elty, Ptr{$elty}, Int32, Ptr{$elty}, Int32, Ptr{$elty}, Int32),
                   uplo, n, alpha, x, 1, y, 1, A, lda)
+        end
+    end
+end
+
+# spr2
+for (fname, elty) in ((:cublasSspr2, :Float32),
+                      (:cublasDspr2, :Float64))
+    @eval begin
+        function cuda_spr2(uplo::Char, n::Int32, alpha::($elty), x::Ptr{$elty},
+                           y::Ptr{$elty}, A::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Char, Int32, $elty, Ptr{$elty}, Int32, y::Ptr{$elty}, Int32, Ptr{$elty}, Int32),
+                  uplo, n, alpha, x, 1, y, 1, A)
+        end
+    end
+end
+
+# hpr2
+for (fname, elty) in ((:cublasShpr2, :Complex64),
+                      (:cublasDhpr2, :Complex128))
+    @eval begin
+        function cuda_hpr2(uplo::Char, n::Int32, alpha::($elty), x::Ptr{$elty},
+                           y::Ptr{$elty}, A::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Char, Int32, $elty, Ptr{$elty}, Int32, y::Ptr{$elty}, Int32, Ptr{$elty}, Int32),
+                  uplo, n, alpha, x, 1, y, 1, A)
         end
     end
 end
