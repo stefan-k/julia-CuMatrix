@@ -506,3 +506,29 @@ for (fname, elty) in ((:cublasShpr, :Complex64),
         end
     end
 end
+
+# syr2
+for (fname, elty) in ((:cublasSsyr2, :Float32),
+                      (:cublasDsyr2, :Float64))
+    @eval begin
+        function cuda_syr2(uplo::Char, n::Int32, alpha::($elty), x::Ptr{$elty}, y::Ptr{$elty}
+                          A::Ptr{$elty}, lda::Int32)
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Char, Int32, $elty, Ptr{$elty}, Int32, Ptr{$elty}, Int32, Ptr{$elty}, Int32),
+                  uplo, n, alpha, x, 1, y, 1, A, lda)
+        end
+    end
+end
+
+# her2
+for (fname, elty) in ((:cublasSher2, :Complex64),
+                      (:cublasDher2, :Complex128))
+    @eval begin
+        function cuda_her2(uplo::Char, n::Int32, alpha::($elty), x::Ptr{$elty}, y::Ptr{$elty}
+                          A::Ptr{$elty}, lda::Int32)
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Char, Int32, $elty, Ptr{$elty}, Int32, Ptr{$elty}, Int32, Ptr{$elty}, Int32),
+                  uplo, n, alpha, x, 1, y, 1, A, lda)
+        end
+    end
+end
