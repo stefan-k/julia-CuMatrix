@@ -480,3 +480,29 @@ for (fname, elty) in ((:cublasSher, :Complex64),
         end
     end
 end
+
+# spr
+for (fname, elty) in ((:cublasSspr, :Float32),
+                      (:cublasDspr, :Float64))
+    @eval begin
+        function cuda_syr(uplo::Char, n::Int32, alpha::($elty), x::Ptr{$elty},
+                          A::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Char, Int32, $elty, Ptr{$elty}, Int32, Ptr{$elty}, Int32),
+                  uplo, n, alpha, x, 1, A)
+        end
+    end
+end
+
+# hpr
+for (fname, elty) in ((:cublasShpr, :Complex64),
+                      (:cublasDhpr, :Complex128))
+    @eval begin
+        function cuda_hpr(uplo::Char, n::Int32, alpha::($elty), x::Ptr{$elty},
+                          A::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Char, Int32, $elty, Ptr{$elty}, Int32, Ptr{$elty}, Int32),
+                  uplo, n, alpha, x, 1, A)
+        end
+    end
+end
