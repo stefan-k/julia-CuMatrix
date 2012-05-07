@@ -222,3 +222,19 @@ for (fname, elty) in ((:cublasSgemv, :Float32),
         end
     end
 end
+
+# gbmv
+for (fname, elty) in ((:cublasSgbmv, :Float32),
+                      (:cublasDgbmv, :Float64),
+                      (:cublasCgbmv, :Complex64),
+                      (:cublasZgbmv, :Complex128))
+    @eval begin
+        function cuda_gbmv(trans::Char, m::Int32, n::Int32, kl::Int32, ku::Int32, alpha::($elty), 
+                           A::Ptr{$elty}, lda::Int32, x::Ptr{$elty}, beta::($elty), y::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Char, Int32, Int32, Int32, Int32, $elty, Ptr{$elty}, Int32, 
+                         Ptr{$elty}, Int32, $elty, Ptr{$elty}, Int32),
+                  trans, m, n, kl, ku, alpha, A, lda, x, 1, beta, y, 1)
+        end
+    end
+end
