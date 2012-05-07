@@ -268,3 +268,18 @@ for (fname, elty) in ((:cublasStbmv, :Float32),
         end
     end
 end
+
+# tpmv
+for (fname, elty) in ((:cublasStpmv, :Float32),
+                      (:cublasDtpmv, :Float64),
+                      (:cublasCtpmv, :Complex64),
+                      (:cublasZtpmv, :Complex128))
+    @eval begin
+        function cuda_tpmv(uplo::Char, trans::Char, diag::Char, n::Int32, 
+                           A::Ptr{$elty}, x::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Char, Char, Char, Int32, Ptr{$elty}, Ptr{$elty}, Int32),
+                  uplo, trans, diag, n, A, x, 1)
+        end
+    end
+end
