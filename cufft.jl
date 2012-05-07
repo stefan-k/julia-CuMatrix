@@ -34,6 +34,14 @@ function cufftPlan3d(nx::Int32, ny::Int32, nz::Int32, cufft_type::Int32)
           nx, ny, nz, cufft_type)
 end
 
+function cufftPlanMany(rank::Int32, n::Ptr{Int32}, inembed::Ptr{Int32}, istride::Int32, 
+                       idist::Int32, onembed::Ptr{Int32}, ostride::Int32, odist::Int32,
+                       cufft_type::Int32, batch::Int32)
+    ccall(dlsym(libcuplus, :cuda_cufftPlanMany),
+          Uint32, (Int32, Ptr{Int32}, Ptr{Int32}, Int32, Int32, Ptr{Int32}, Int32, Int32, Int32, Int32),
+          rank, n, inembed, istride, idist, onembed, ostride, odist, cufft_type, batch)
+end
+
 cufftPlan1d(nx::Integer, cufft_type::Int32, batch::Integer) = cufftPlan1d(int32(nx), cufft_type, int32(batch))
 cufftPlan1d(nx::Integer, cufft_type::Int32) = cufftPlan1d(int32(nx), cufft_type, int32(1))
 cufftPlan1d(nx::Integer) = cufftPlan1d(int32(nx), CUFFT_C2C, int32(1))

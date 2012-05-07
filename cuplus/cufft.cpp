@@ -25,6 +25,16 @@ unsigned int cuda_cufftPlan3d(int nx, int ny, int nz, int type)
     return ptr;
 }
 
+unsigned int cuda_cufftPlanMany(int rank, int *n, int *inembed, int istride,
+                                int idist, int *onembed, int ostride,
+                                int odist, int type, int batch)
+{
+  unsigned int ptr;
+  cufftPlanMany(&ptr, rank, n, inembed, istride, idist, onembed, ostride, odist,
+                (cufftType)type, batch);
+  return ptr;
+}
+
 int cuda_cufftGetVersion()
 {
     int version;

@@ -23,6 +23,9 @@ API void cudaZrandn(cuDoubleComplex *ptr, int numel);
 API unsigned int cuda_cufftPlan1d(int nx, int type, int batch);
 API unsigned int cuda_cufftPlan2d(int nx, int ny, int type);
 API unsigned int cuda_cufftPlan3d(int nx, int ny, int nz, int type);
+API unsigned int cuda_cufftPlanMany(int rank, int *n, int *inembed, int istride,
+                                    int idist, int *onembed, int ostride,
+                                    int odist, int type, int batch);
 API int cuda_cufftGetVersion();
 
 // Return error
