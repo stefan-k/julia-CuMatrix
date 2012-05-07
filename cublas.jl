@@ -298,3 +298,18 @@ for (fname, elty) in ((:cublasStrsv, :Float32),
         end
     end
 end
+
+# tpsv
+for (fname, elty) in ((:cublasStpsv, :Float32),
+                      (:cublasDtpsv, :Float64),
+                      (:cublasCtpsv, :Complex64),
+                      (:cublasZtpsv, :Complex128))
+    @eval begin
+        function cuda_tpsv(uplo::Char, trans::Char, diag::Char, n::Int32, 
+                           A::Ptr{$elty}, x::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Char, Char, Char, Int32, Ptr{$elty}, Ptr{$elty}, Int32),
+                  uplo, trans, diag, n, A, x, 1)
+        end
+    end
+end
