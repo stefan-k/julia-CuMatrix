@@ -133,6 +133,8 @@ function (*)(A::CuMatrix, alpha)
     return B
 end
 
+(*)(alpha, A::CuMatrix) = (*)(A::CuMatrix, alpha)
+
 function dot(A::CuMatrix, B::CuMatrix)
     if eltype(A) != eltype(B)
         error("Precision mismatch in Dot product")
