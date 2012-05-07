@@ -412,3 +412,45 @@ for (fname, elty) in ((:cublasChpmv, :Complex64),
         end
     end
 end
+
+# ger
+for (fname, elty) in ((:cublasSger, :Float32),
+                      (:cublasDger, :Float64))
+    @eval begin
+        function cuda_ger(m::Int32, n::Int32, alpha::($elty), x::Ptr{$elty}, 
+                          y::Ptr{$elty}, A::Ptr{$elty}, lda::Int32)
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Int32, Int32, $elty, Ptr{$elty}, Int32, Ptr{$elty},
+                         Int32, Ptr{$elty}, Int32),
+                  m, n, alpha, x, 1, y, 1  A, lda)
+        end
+    end
+end
+
+# geru
+for (fname, elty) in ((:cublasSgeru, :Complex64),
+                      (:cublasDgeru, :Complex128))
+    @eval begin
+        function cuda_geru(m::Int32, n::Int32, alpha::($elty), x::Ptr{$elty}, 
+                          y::Ptr{$elty}, A::Ptr{$elty}, lda::Int32)
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Int32, Int32, $elty, Ptr{$elty}, Int32, Ptr{$elty},
+                         Int32, Ptr{$elty}, Int32),
+                  m, n, alpha, x, 1, y, 1  A, lda)
+        end
+    end
+end
+
+# gerc
+for (fname, elty) in ((:cublasSgerc, :Complex64),
+                      (:cublasDgerc, :Complex128))
+    @eval begin
+        function cuda_gerc(m::Int32, n::Int32, alpha::($elty), x::Ptr{$elty}, 
+                          y::Ptr{$elty}, A::Ptr{$elty}, lda::Int32)
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Int32, Int32, $elty, Ptr{$elty}, Int32, Ptr{$elty},
+                         Int32, Ptr{$elty}, Int32),
+                  m, n, alpha, x, 1, y, 1  A, lda)
+        end
+    end
+end
