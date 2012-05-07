@@ -356,3 +356,31 @@ for (fname, elty) in ((:cublasChemv, :Complex64),
         end
     end
 end
+
+# sbmv
+for (fname, elty) in ((:cublasSsbmv, :Float32),
+                      (:cublasDsbmv, :Float64))
+    @eval begin
+        function cuda_sbmv(uplo::Char, n::Int32, k::Int32, alpha::($elty), A::Ptr{$elty}, 
+                           lda::Int32, x::Ptr{$elty}, beta::($elty), y::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Char, Int32, Int32, $elty, Ptr{$elty}, Int32, Ptr{$elty}, 
+                         Int32, $elty, Ptr{$elty}, Int32),
+                  uplo, n, k, alpha, A, lda, x, 1, beta, y, 1)
+        end
+    end
+end
+
+# hbmv
+for (fname, elty) in ((:cublasChemv, :Complex64),
+                      (:cublasZhemv, :Complex128))
+    @eval begin
+        function cuda_hbmv(uplo::Char, n::Int32, k::Int32, alpha::($elty), A::Ptr{$elty}, 
+                           lda::Int32, x::Ptr{$elty}, beta::($elty), y::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Char, Int32, Int32, $elty, Ptr{$elty}, Int32, Ptr{$elty}, 
+                         Int32, $elty, Ptr{$elty}, Int32),
+                  uplo, n, k, alpha, A, lda, x, 1, beta, y, 1)
+        end
+    end
+end
