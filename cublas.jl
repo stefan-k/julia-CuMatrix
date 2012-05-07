@@ -329,13 +329,25 @@ for (fname, elty) in ((:cublasStbsv, :Float32),
     end
 end
 
-# symv/hemv
+# symv
 for (fname, elty) in ((:cublasSsymv, :Float32),
-                      (:cublasDsymv, :Float64),
-                      (:cublasChemv, :Complex64),
+                      (:cublasDsymv, :Float64))
+    @eval begin
+        function cuda_symv(uplo::Char, n::Int32, alpha::($elty), A::Ptr{$elty}, 
+                           lda::Int32, x::Ptr{$elty}, beta::($elty), y::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Char, Int32, $elty, Ptr{$elty}, Int32, Ptr{$elty}, 
+                         Int32, $elty, Ptr{$elty}, Int32),
+                  uplo, n, alpha, A, lda, x, 1, beta, y, 1)
+        end
+    end
+end
+
+# hemv
+for (fname, elty) in ((:cublasChemv, :Complex64),
                       (:cublasZhemv, :Complex128))
     @eval begin
-        function cuda_tbsv(uplo::Char, n::Int32, alpha::($elty), A::Ptr{$elty}, 
+        function cuda_hemv(uplo::Char, n::Int32, alpha::($elty), A::Ptr{$elty}, 
                            lda::Int32, x::Ptr{$elty}, beta::($elty), y::Ptr{$elty})
             ccall(dlsym(libcublas, $string(fname)),
                   Void, (Char, Int32, $elty, Ptr{$elty}, Int32, Ptr{$elty}, 
