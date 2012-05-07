@@ -467,3 +467,16 @@ for (fname, elty) in ((:cublasSsyr, :Float32),
         end
     end
 end
+
+# her
+for (fname, elty) in ((:cublasSher, :Complex64),
+                      (:cublasDher, :Complex128))
+    @eval begin
+        function cuda_her(uplo::Char, n::Int32, alpha::($elty), x::Ptr{$elty},
+                          A::Ptr{$elty}, lda::Int32)
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Char, Int32, $elty, Ptr{$elty}, Int32, Ptr{$elty}, Int32),
+                  uplo, n, alpha, x, 1, A, lda)
+        end
+    end
+end
