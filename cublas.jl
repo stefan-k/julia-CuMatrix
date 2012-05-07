@@ -454,3 +454,16 @@ for (fname, elty) in ((:cublasSgerc, :Complex64),
         end
     end
 end
+
+# syr
+for (fname, elty) in ((:cublasSsyr, :Float32),
+                      (:cublasDsyr, :Float64))
+    @eval begin
+        function cuda_syr(uplo::Char, n::Int32, alpha::($elty), x::Ptr{$elty},
+                          A::Ptr{$elty}, lda::Int32)
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Char, Int32, $elty, Ptr{$elty}, Int32, Ptr{$elty}, Int32),
+                  uplo, n, alpha, x, 1, A, lda)
+        end
+    end
+end
