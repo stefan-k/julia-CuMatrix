@@ -206,3 +206,19 @@ for (fname, elty) in ((:cublasSrotmg, :Float32),
         end
     end
 end
+
+# gemv
+for (fname, elty) in ((:cublasSgemv, :Float32),
+                      (:cublasDgemv, :Float64),
+                      (:cublasCgemv, :Complex64),
+                      (:cublasZgemv, :Complex128))
+    @eval begin
+        function cuda_gemv(trans::Char, m::Int32, n::Int32, alpha::($elty), A::Ptr{$elty},
+                           lda::Int32, x::Ptr{$elty}, beta::($elty), y::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Char, Int32, Int32, $elty, Ptr{$elty}, Int32, 
+                         Ptr{$elty}, Int32, $elty, Ptr{$elty}, Int32),
+                  trans, m, n, alpha, A, lda, x, 1, beta, y, 1)
+        end
+    end
+end
