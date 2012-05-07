@@ -384,3 +384,31 @@ for (fname, elty) in ((:cublasChemv, :Complex64),
         end
     end
 end
+
+# spmv
+for (fname, elty) in ((:cublasSspmv, :Float32),
+                      (:cublasDspmv, :Float64))
+    @eval begin
+        function cuda_spmv(uplo::Char, n::Int32, alpha::($elty), A::Ptr{$elty}, 
+                           x::Ptr{$elty}, beta::($elty), y::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Char, Int32, $elty, Ptr{$elty}, Ptr{$elty}, 
+                         Int32, $elty, Ptr{$elty}, Int32),
+                  uplo, n, alpha, A, x, 1, beta, y, 1)
+        end
+    end
+end
+
+# hpmv
+for (fname, elty) in ((:cublasChpmv, :Complex64),
+                      (:cublasZhpmv, :Complex128))
+    @eval begin
+        function cuda_hpmv(uplo::Char, n::Int32, alpha::($elty), A::Ptr{$elty}, 
+                           x::Ptr{$elty}, beta::($elty), y::Ptr{$elty})
+            ccall(dlsym(libcublas, $string(fname)),
+                  Void, (Char, Int32, $elty, Ptr{$elty}, Ptr{$elty}, 
+                         Int32, $elty, Ptr{$elty}, Int32),
+                  uplo, n, alpha, A, x, 1, beta, y, 1)
+        end
+    end
+end
