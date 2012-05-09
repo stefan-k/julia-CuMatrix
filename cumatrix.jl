@@ -1,5 +1,5 @@
-include("cuda.jl")
-include("cufft.jl")
+load("cuda.jl")
+load("cufft.jl")
 
 # The CuMatrix class
 type CuMatrix

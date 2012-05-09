@@ -1,3 +1,3 @@
-include("cuplus.jl")
-include("cublas.jl")
-include("cufft.jl")
+load("cuplus.jl")
+load("cublas.jl")
+load("cufft.jl")
