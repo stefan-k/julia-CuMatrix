@@ -9,14 +9,14 @@ end
 # Allocate device memory
 function cuda_malloc{T}(T::Type{T}, count::Integer)
     ptr = ccall(dlsym(libcuplus, :cuda_malloc),
-                Ptr{T}, (Integer, ),
+                Ptr{T}, (Int32, ),
                 count * sizeof(T))
     if ptr == C_NULL
         # If unable to allocate, call garbage collector
         gc()
         # Try allocating again
         ptr = ccall(dlsym(libcuplus, :cuda_malloc),
-                    Ptr{T}, (Integer, ),
+                    Ptr{T}, (Int32, ),
                     count * sizeof(T))
     end
 
@@ -30,9 +30,9 @@ cuda_malloc(T::Type, rows::Integer, cols::Integer) = cuda_malloc(T, rows * cols)
 cuda_malloc(T::Type, dims::(Integer, Integer)) = cuda_malloc(T, dims[1] * dims[2])
 
 # Free device memory
-function cuda_free(ptr::Ptr)
+function cuda_free{T}(ptr::Ptr{T})
     ccall(dlsym(libcuplus, :cuda_free),
-          Void, (Integer, ),
+          Void, (Ptr{T}, ),
           ptr)
 end
 
