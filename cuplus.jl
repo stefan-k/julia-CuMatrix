@@ -27,7 +27,7 @@ function cuda_malloc{T}(T::Type{T}, count::Integer)
     return ptr
 end
 cuda_malloc(T::Type, rows::Integer, cols::Integer) = cuda_malloc(T, rows * cols)
-cuda_malloc(T::Type, dims::(Integer, Integer)) = cuda_malloc(T, dims[1] * dims[2])
+cuda_malloc(T::Type, dims) = cuda_malloc(T, prod(dims))
 
 # Free device memory
 function cuda_free{T}(ptr::Ptr{T})
@@ -37,7 +37,7 @@ function cuda_free{T}(ptr::Ptr{T})
 end
 
 # Copy from Host to Device Memory
-function mem_device{T}(dst::Ptr{T}, src::Matrix{T})
+function mem_device{T}(dst::Ptr{T}, src::Array{T})
     bytes::Int32 = sizeof(T) * numel(src)
     ccall(dlsym(libcuplus, :cuda_memcpy_h2d),
           Void, (Ptr{T}, Ptr{T}, Int32),
@@ -45,7 +45,7 @@ function mem_device{T}(dst::Ptr{T}, src::Matrix{T})
 end
 
 # Copy from Device to Host Memory
-function mem_host{T}(dst::Matrix, src::Ptr{T})
+function mem_host{T}(dst::Array{T}, src::Ptr{T})
     bytes::Int32 = sizeof(T) * numel(dst)
     ccall(dlsym(libcuplus, :cuda_memcpy_d2h),
           Void, (Ptr{T}, Ptr{T}, Int32),
@@ -66,7 +66,7 @@ for (fname, elty) in ((:cudaSrand, :Float32),
                       (:cudaZrand, :Complex128))
     @eval begin
         function cuda_rand(ptr::Ptr{$elty}, count::Integer)
-            count = convert(Int32, count)
+            count = convert(Int32, count) # don't think this is necessary
             ccall(dlsym(libcuplus, $string(fname)),
                   Void, (Ptr{$elty}, Int32),
                   ptr, count)
